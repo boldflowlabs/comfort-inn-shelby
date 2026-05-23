@@ -156,6 +156,12 @@ export async function POST(req: NextRequest) {
           intentLog: JSON.stringify([]),
         }
       });
+    } else if (leadStep === "name" && conversation.leadCaptured) {
+      // If user starts a new booking flow, reset leadCaptured to false
+      conversation = await prisma.conversation.update({
+        where: { sessionId },
+        data: { leadCaptured: false }
+      });
     }
 
     // 3. Save User Message to DB
@@ -410,17 +416,21 @@ Since you are in the complaint capture flow, your output JSON must include "comp
         parsedResponse.extractedValue = extracted;
         parsedResponse.nextStep = "phone";
         parsedResponse.response = `Thank you! Got your email: **${extracted}**. What phone number can we reach you at? (This is required to send your rate alerts).`;
-        parsedResponse.intent = "BOOKING_IN_PROGRESS";
         
-        // Trigger BOOKING_IN_PROGRESS webhook asynchronously
-        triggerN8nWebhook({
-          event_type: "BOOKING_IN_PROGRESS",
-          session_id: sessionId,
-          timestamp: new Date().toISOString(),
-          guest: {
-            email: extracted
-          }
-        });
+        // Only trigger/tag booking-in-progress if the lead isn't already captured/completed
+        if (conversation && !conversation.leadCaptured) {
+          parsedResponse.intent = "BOOKING_IN_PROGRESS";
+          
+          // Trigger BOOKING_IN_PROGRESS webhook asynchronously
+          triggerN8nWebhook({
+            event_type: "BOOKING_IN_PROGRESS",
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+            guest: {
+              email: extracted
+            }
+          });
+        }
       } else {
         parsedResponse.leadValid = false;
         parsedResponse.extractedValue = null;

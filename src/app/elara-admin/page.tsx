@@ -456,6 +456,30 @@ export default function ElaraAdminDashboard() {
     );
   };
 
+  // 5.5. Scan for abandoned bookings (test override)
+  const [isScanning, setIsScanning] = useState(false);
+  const handleScanAbandonment = async () => {
+    setIsScanning(true);
+    try {
+      const res = await fetch("/api/event?action=scan_abandonment&test=true", {
+        method: "POST"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        triggerAlert(data.message || "Successfully scanned and processed abandoned bookings.", "success");
+        loadTabData(activeTab);
+      } else {
+        const err = await res.json();
+        triggerAlert(err.error || "Failed to scan for abandoned bookings.", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      triggerAlert("An error occurred while running the scan.", "error");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   // 6. Export leads to CSV
   const handleExportLeads = () => {
     window.open("/api/admin?action=export-leads", "_blank");
@@ -543,7 +567,7 @@ export default function ElaraAdminDashboard() {
       if (intents.length === 0) return <span className="tag-intent faq">FAQ / General</span>;
 
       return intents.map((intent, idx) => {
-        const clean = intent.replace("_INTENT", "").replace("_", " ");
+        const clean = intent.replace(/_INTENT/g, "").replace(/_/g, " ");
         let cls = "faq";
         if (intent.includes("BOOKING")) cls = "booking";
         if (intent.includes("COMPLAINT") || intent.includes("ESCALATED")) cls = "complaint";
@@ -684,6 +708,19 @@ export default function ElaraAdminDashboard() {
                 </button>
               )}
 
+              {activeTab === "conversations" && (
+                <button
+                  className="btn-primary"
+                  style={{ background: "rgba(212, 175, 55, 0.15)", border: "1px solid rgba(212, 175, 55, 0.3)", color: "var(--gold-300)" }}
+                  onClick={handleScanAbandonment}
+                  disabled={isScanning}
+                  title="Scan for abandoned bookings immediately (test mode)"
+                >
+                  <RefreshCw size={14} className={isScanning ? "spin" : ""} style={{ animation: isScanning ? "spin 1s linear infinite" : "none" }} />
+                  <span>Scan Abandonment</span>
+                </button>
+              )}
+
               {activeTab === "complaints" && (
                 <button
                   className="btn-primary"
@@ -739,7 +776,7 @@ export default function ElaraAdminDashboard() {
                   <div className="stat-info">
                     <span className="stat-label">Common Intent</span>
                     <span className="stat-value" style={{ fontSize: "1.1rem", textTransform: "capitalize" }}>
-                      {stats.topIntent.replace("_INTENT", "").replace("_", " ").toLowerCase()}
+                      {stats.topIntent.replace(/_INTENT/g, "").replace(/_/g, " ").toLowerCase()}
                     </span>
                   </div>
                 </div>

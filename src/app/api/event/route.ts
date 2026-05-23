@@ -4,7 +4,16 @@ import { verifyJwt } from "@/lib/jwt";
 
 // Auth check for protected endpoints
 function isAuthenticated(req: NextRequest): boolean {
-  const token = req.cookies.get("elara_admin_token")?.value;
+  // Try Authorization header first
+  const authHeader = req.headers.get("Authorization");
+  let token = "";
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7);
+  } else {
+    // Fallback to cookie
+    token = req.cookies.get("elara_admin_token")?.value || "";
+  }
+
   if (!token) return false;
   const decoded = verifyJwt(token, process.env.JWT_SECRET || "");
   return !!decoded;
@@ -34,10 +43,11 @@ async function triggerN8nWebhook(payload: any) {
 }
 
 // Function to scan for abandoned bookings (can be run periodically)
-async function scanAndProcessAbandonment() {
-  const abandonmentTimeThreshold = new Date(Date.now() - 30 * 60 * 1000); // 30 minutes of inactivity
+async function scanAndProcessAbandonment(isTest = false) {
+  const thresholdMs = isTest ? 0 : 15 * 60 * 1000;
+  const abandonmentTimeThreshold = new Date(Date.now() - thresholdMs); // 15 minutes of inactivity normally
 
-  // Find conversations that started earlier than 30 mins ago, aren't marked as lead captured,
+  // Find conversations that started earlier than 15 mins ago, aren't marked as lead captured,
   // and haven't already fired a booking abandoned event.
   const activeConversations = await prisma.conversation.findMany({
     where: {
@@ -61,7 +71,9 @@ async function scanAndProcessAbandonment() {
     const intents = JSON.parse(conv.intentLog || "[]");
     
     // Check if they showed booking intent and haven't already been marked abandoned
-    const hasBookingIntent = intents.includes("BOOKING_INTENT");
+    const hasBookingIntent = intents.includes("BOOKING_INTENT") || 
+                             intents.includes("BOOKING_IN_PROGRESS") || 
+                             intents.includes("LEAD_CAPTURE");
     const alreadyAbandoned = intents.includes("BOOKING_ABANDONED");
 
     if (hasBookingIntent && !alreadyAbandoned) {
@@ -156,7 +168,8 @@ export async function POST(req: NextRequest) {
       if (!isAuthenticated(req)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const count = await scanAndProcessAbandonment();
+      const isTest = searchParams.get("test") === "true";
+      const count = await scanAndProcessAbandonment(isTest);
       return NextResponse.json({ success: true, message: `Scanned and processed ${count} abandoned booking(s).` });
     }
 
@@ -192,8 +205,23 @@ export async function GET(req: NextRequest) {
       if (!isAuthenticated(req)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const count = await scanAndProcessAbandonment();
+      const isTest = searchParams.get("test") === "true";
+      const count = await scanAndProcessAbandonment(isTest);
       return NextResponse.json({ success: true, message: `Scanned and processed ${count} abandoned booking(s).` });
+    }
+
+    if (action === "check_lead") {
+      const sessionId = searchParams.get("sessionId");
+      if (!sessionId) {
+        return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
+      }
+      const conversation = await prisma.conversation.findUnique({
+        where: { sessionId }
+      });
+      return NextResponse.json({
+        sessionId,
+        leadCaptured: conversation ? conversation.leadCaptured : false
+      });
     }
 
     return NextResponse.json({ message: "API is active. Use POST to trigger events or ?action=scan_abandonment to scan." });

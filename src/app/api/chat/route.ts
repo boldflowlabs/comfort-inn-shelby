@@ -410,6 +410,17 @@ Since you are in the complaint capture flow, your output JSON must include "comp
         parsedResponse.extractedValue = extracted;
         parsedResponse.nextStep = "phone";
         parsedResponse.response = `Thank you! Got your email: **${extracted}**. What phone number can we reach you at? (This is required to send your rate alerts).`;
+        parsedResponse.intent = "BOOKING_IN_PROGRESS";
+        
+        // Trigger BOOKING_IN_PROGRESS webhook asynchronously
+        triggerN8nWebhook({
+          event_type: "BOOKING_IN_PROGRESS",
+          session_id: sessionId,
+          timestamp: new Date().toISOString(),
+          guest: {
+            email: extracted
+          }
+        });
       } else {
         parsedResponse.leadValid = false;
         parsedResponse.extractedValue = null;

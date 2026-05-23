@@ -231,6 +231,26 @@ To ensure only Elara can trigger this workflow:
    - **Subject:** `Still thinking about Shelby? Your room is waiting.`
    - **Body (HTML):** Select expression and map it to the output of the OpenAI node (e.g., `{{ $json.text }}` or `{{ $json.message.content }}`).
 
+### Branch D: Real-Time Event-Driven Abandonment Checker (Best Practice Alternative)
+If you want to trigger the recovery flow in real-time as soon as the user goes idle (rather than using a periodic cron job on the server), configure **Branch D**:
+
+1. **Switch Node Event Check**:
+   - Add a rule to the Router/Switch Node: String equals `BOOKING_IN_PROGRESS` -> route to **Branch D**.
+2. **Wait / Delay Node**:
+   - Connect the output to a **Wait** node.
+   - Set **Amount** to `15` and **Unit** to `Minutes` (this represents the inactivity wait window).
+3. **HTTP Request Node (Check Lead Status)**:
+   - Connect to an **HTTP Request** node.
+   - Set **Method** to `GET`.
+   - Set **URL** to: `https://your-domain.com/api/event?action=check_lead&sessionId={{ $json.session_id }}` (or `http://localhost:3000/...` for local testing).
+4. **If Node (Check if Captured)**:
+   - Connect the HTTP Request output to an **If** node.
+   - **Value 1:** `{{ $json.leadCaptured }}`
+   - **Operation:** `Boolean is false`
+5. **Recovery Node Actions**:
+   - Connect the **true** output (meaning they did *not* finish booking) to the **Booking Abandonment Recovery Email (Branch C)** node sequence.
+   - Connect the **false** output (meaning they *did* finish booking) to a No-Op/End node (do nothing, flow stops).
+
 ---
 
 ## 🧪 Testing the Integration
@@ -238,4 +258,5 @@ To ensure only Elara can trigger this workflow:
 2. Go to the Next.js Homepage (`localhost:3000`), open Elara, type:
    - *"I want to book a room"* -> Complete the name, email, and phone entries to trigger `LEAD_CAPTURED`.
    - Or type *"I want to complain. The noise in room 204 is too loud!"* to trigger `COMPLAINT_ESCALATED`.
+   - Or enter only your email address in the booking flow to trigger `BOOKING_IN_PROGRESS`.
 3. Verify that the node lights up green in n8n and logs the parsed variables in the execution list.

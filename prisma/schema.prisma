@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Conversation {
+  id               String    @id @default(cuid())
+  sessionId        String    @unique
+  startedAt        DateTime  @default(now())
+  endedAt          DateTime?
+  language         String    @default("en")
+  leadCaptured     Boolean   @default(false)
+  complaintFlagged Boolean   @default(false)
+  intentLog        String    @default("[]") // JSON string of detected intents
+  messages         Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  sessionId      String
+  role           String       // "user" or "assistant"
+  content        String
+  timestamp      DateTime     @default(now())
+  intentDetected String?
+  conversation   Conversation @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+}
+
+model Lead {
+  id             String    @id @default(cuid())
+  sessionId      String?   // optional link to conversation session
+  firstName      String
+  email          String
+  phone          String
+  checkinDate    String?
+  roomPreference String?
+  sourcePage     String?
+  createdAt      DateTime  @default(now())
+  followupSentAt DateTime?
+}
+
+model KbItem {
+  id        String   @id @default(cuid())
+  category  String   // e.g., "hotel_info", "policies", "amenities", "renovations"
+  key       String   @unique // e.g., "pool_status", "breakfast_hours"
+  value     String   // text value of the detail
+  updatedBy String?  // e.g., "admin"
+  updatedAt DateTime @updatedAt
+}
+
+model Complaint {
+  id          String   @id @default(cuid())
+  sessionId   String?  // link to conversation session
+  guestName   String
+  roomNumber  String
+  contactInfo String?  // phone or email
+  description String   // the complaint issue itself (detailed)
+  summary     String   @default("") // brief summary of the complaint
+  createdAt   DateTime @default(now())
+  status      String   @default("pending") // pending | resolved
+}

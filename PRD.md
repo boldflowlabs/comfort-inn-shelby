@@ -5,7 +5,7 @@
 **Client:** Comfort Inn Shelby NC (comfortshelby.com)  
 **IDE:** Google Antigravity  
 **Automation Layer:** n8n (Client's Self-Hosted Subscription)  
-**AI Model:** OpenAI GPT-5.4 mini (`gpt-5.4-mini-2026-03-17`)  
+**AI Model:** OpenAI GPT-4o mini (`gpt-4o-mini`)  
 **Date:** May 2026
 
 ---
@@ -117,7 +117,7 @@ Wants lead data and conversation summaries delivered passively. Does not want to
 
 ### 5.2 AI Agent (Core Intelligence)
 
-**FR-010** — The AI is powered by **OpenAI GPT-5.4 mini** (`gpt-5.4-mini-2026-03-17`) via the OpenAI Chat Completions API.
+**FR-010** — The AI is powered by **OpenAI GPT-4o mini** (`gpt-4o-mini`) via the OpenAI Chat Completions API.
 
 **FR-011** — The AI is configured with a detailed system prompt. The agent's name is **Elara**. Personality: warm, knowledgeable, professional — representative of the hotel's friendly southern hospitality culture. Never robotic.
 
@@ -409,7 +409,7 @@ Wants lead data and conversation summaries delivered passively. Does not want to
 |---|---|
 | Chat Widget | React (embeddable JS snippet) |
 | Backend / API | Next.js (App Router + API Routes) |
-| AI Model | OpenAI `gpt-5.4-mini-2026-03-17` |
+| AI Model | OpenAI `gpt-4o-mini` |
 | Database | PostgreSQL via Supabase |
 | Automation | n8n (client's self-hosted subscription) |
 | Email | n8n → Gmail node or SMTP node |
@@ -622,14 +622,24 @@ Connect from the **"COMPLAINT_ESCALATED"** output pin:
 3. Settings:
    - **To:** owner's email
    - **Subject:** `⚠️ Guest Complaint — Elara Alert`
-   - **Body:** `A guest has reported an issue: {{ $json.complaint_summary }}. Session time: {{ $json.timestamp }}. Guest name: {{ $json.guest.name || 'Not captured' }}. Please follow up immediately at 704-482-5666.`
+   - **Body (HTML):**
+     ```
+     A guest has reported an issue:
+     - Guest name: {{ $json.guest.name || 'Not captured' }}
+     - Room: {{ $json.guest.room }}
+     - Contact: {{ $json.guest.contact }}
+     - Summary: {{ $json.complaint_summary }}
+     - Full Details: {{ $json.complaint_details }}
+
+     Please follow up immediately at 704-482-5666.
+     ```
 4. Save
 
 **Node B2 — Google Sheets (log complaint)**
 1. Click "+" after the email node
 2. Add a Google Sheets node
 3. Append row to a sheet called `Elara Complaints Log`
-4. Map: Complaint Summary, Guest Name, Timestamp
+4. Map: Guest Name, Room, Contact Info, Complaint Summary, Full Details, Timestamp
 5. Save
 
 *(Optional) Node B3 — Twilio SMS*
@@ -686,7 +696,7 @@ This branch runs automatically every Monday at 8 AM — no one needs to trigger 
 1. Search for **"OpenAI"** and select it
 2. Connect your OpenAI API key
 3. **Operation:** Chat → Message
-4. **Model:** `gpt-5.4-mini-2026-03-17`
+4. **Model:** `gpt-4o-mini`
 5. **Prompt:** `You are a hotel analytics assistant. Here is the last 7 days of chatbot data for Comfort Inn Shelby: {{ $json }}. Summarize: total leads captured, top 5 guest questions, any complaints, renovation-related inquiries. Write a short, friendly summary for the hotel owner.`
 
 **Node D4 — Send Email to Owner**
@@ -839,7 +849,7 @@ intents, and a knowledge base editor. Unique and memorable design.
 
 - [ ] Embeddable chat widget (`<script>` snippet, drops onto any page)
 - [ ] Elara chatbot backend API (Next.js, Vercel)
-- [ ] OpenAI GPT-5.4 mini agent with full hotel knowledge base + renovation notice
+- [ ] OpenAI GPT-4o mini agent with full hotel knowledge base + renovation notice
 - [ ] Lead capture flow + database
 - [ ] n8n unified workflow: `Elara — Hotel Automation Hub` (4 branches, 1 workflow)
 - [ ] n8n setup guide (Section 8 of this document)
@@ -850,4 +860,4 @@ intents, and a knowledge base editor. Unique and memorable design.
 
 ---
 
-*PRD v2.0 — Updated by BoldFlow Labs, May 2026. All changes from client review applied: chatbot renamed to Elara, hotel brand name corrected to Comfort Inn Shelby, design preferences removed, call button added to widget header, phone required in lead capture, n8n consolidated to one unified workflow, admin endpoint updated to `/elara-admin`, AI model updated to OpenAI GPT-5.4 mini (`gpt-5.4-mini-2026-03-17`), n8n beginner setup guide added, renovation status added to knowledge base.*
+*PRD v2.0 — Updated by BoldFlow Labs, May 2026. All changes from client review applied: chatbot renamed to Elara, hotel brand name corrected to Comfort Inn Shelby, design preferences removed, call button added to widget header, phone required in lead capture, n8n consolidated to one unified workflow, admin endpoint updated to `/elara-admin`, AI model updated to OpenAI GPT-4o mini (`gpt-4o-mini`), n8n beginner setup guide added, renovation status added to knowledge base.*

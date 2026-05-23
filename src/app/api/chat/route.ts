@@ -2,6 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 
+// ─── Rate Limiting ──────────────────────────────────────────────────
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 30; // max requests per window per session
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+// Auto-cleanup stale entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}, 5 * 60 * 1000);
+
+function isRateLimited(sessionId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(sessionId);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(sessionId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
 // Helper to trigger the n8n webhook
 async function triggerN8nWebhook(payload: any) {
   const url = process.env.N8N_WEBHOOK_URL;
@@ -97,6 +124,14 @@ export async function POST(req: NextRequest) {
 
     if (!message || !sessionId) {
       return NextResponse.json({ error: "Missing message or sessionId" }, { status: 400 });
+    }
+
+    // Rate limit check
+    if (isRateLimited(sessionId)) {
+      return NextResponse.json({
+        response: "You're sending messages a bit too quickly. Please wait a moment and try again.",
+        intent: "GENERAL_FAQ"
+      }, { status: 429 });
     }
 
     // 1. Fetch latest Knowledge Base from DB
@@ -498,6 +533,6 @@ Since you are in the complaint capture flow, your output JSON must include "comp
     return NextResponse.json({
       response: "I'm having a brief moment — please call us at 704-482-5666 for immediate help.",
       intent: "GENERAL_FAQ"
-    });
+    }, { status: 500 });
   }
 }

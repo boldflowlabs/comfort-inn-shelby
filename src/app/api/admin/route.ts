@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { signJwt, verifyJwt } from "@/lib/jwt";
 
-const SECRET = process.env.JWT_SECRET || "comfort-inn-shelby-elara-token-secret-123";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "owner@comfortshelby.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
+const SECRET = process.env.JWT_SECRET || "";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 // Helper to check token from cookies
 function checkAuthentication(req: NextRequest): boolean {

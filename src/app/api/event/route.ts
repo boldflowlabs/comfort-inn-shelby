@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { verifyJwt } from "@/lib/jwt";
+
+// Auth check for protected endpoints
+function isAuthenticated(req: NextRequest): boolean {
+  const token = req.cookies.get("elara_admin_token")?.value;
+  if (!token) return false;
+  const decoded = verifyJwt(token, process.env.JWT_SECRET || "");
+  return !!decoded;
+}
 
 // Helper to trigger the n8n webhook
 async function triggerN8nWebhook(payload: any) {
@@ -59,8 +68,8 @@ async function scanAndProcessAbandonment() {
       // Look for an email in message content
       let email: string | null = null;
       let firstName: string = "Valued Guest";
-      let roomPreference: string = "King";
-      let checkinDate: string = "Not selected";
+      const roomPreference: string = "King";
+      const checkinDate: string = "Not selected";
 
       // Simple regex for email detection
       const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
@@ -144,6 +153,9 @@ export async function POST(req: NextRequest) {
     const action = searchParams.get("action");
 
     if (action === "scan_abandonment") {
+      if (!isAuthenticated(req)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
       const count = await scanAndProcessAbandonment();
       return NextResponse.json({ success: true, message: `Scanned and processed ${count} abandoned booking(s).` });
     }
@@ -177,6 +189,9 @@ export async function GET(req: NextRequest) {
     const action = searchParams.get("action");
 
     if (action === "scan_abandonment") {
+      if (!isAuthenticated(req)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
       const count = await scanAndProcessAbandonment();
       return NextResponse.json({ success: true, message: `Scanned and processed ${count} abandoned booking(s).` });
     }

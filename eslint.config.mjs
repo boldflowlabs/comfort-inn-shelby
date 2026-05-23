@@ -5,6 +5,16 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      // Webhook payloads, API bodies, and JWT utils use `any` intentionally
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Allow underscore-prefixed unused vars (common in catch blocks)
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }],
+      // Client-side initialization in useEffect is required to prevent Next.js hydration mismatches
+      "react-hooks/set-state-in-effect": "warn",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

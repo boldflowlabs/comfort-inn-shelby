@@ -181,13 +181,7 @@ export default function ElaraAdminDashboard() {
     checkAuth();
   }, []);
 
-  // 2. Load tab data
-  useEffect(() => {
-    if (authenticated) {
-      loadTabData(activeTab);
-    }
-  }, [authenticated, activeTab]);
-
+  // 2. Load tab data helper
   const loadTabData = async (tab: TabType) => {
     setIsLoadingData(true);
     try {
@@ -228,6 +222,13 @@ export default function ElaraAdminDashboard() {
       setIsLoadingData(false);
     }
   };
+
+  // Load data when authenticated or tab changes
+  useEffect(() => {
+    if (authenticated) {
+      loadTabData(activeTab);
+    }
+  }, [authenticated, activeTab]);
 
   // Trigger search actions manually or via effects
   useEffect(() => {
@@ -542,7 +543,7 @@ export default function ElaraAdminDashboard() {
       if (intents.length === 0) return <span className="tag-intent faq">FAQ / General</span>;
 
       return intents.map((intent, idx) => {
-        let clean = intent.replace("_INTENT", "").replace("_", " ");
+        const clean = intent.replace("_INTENT", "").replace("_", " ");
         let cls = "faq";
         if (intent.includes("BOOKING")) cls = "booking";
         if (intent.includes("COMPLAINT") || intent.includes("ESCALATED")) cls = "complaint";

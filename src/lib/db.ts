@@ -1,13 +1,21 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { neonConfig } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import ws from "ws";
+
+// Enable WebSockets for database queries
+neonConfig.webSocketConstructor = ws;
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 const getPrismaInstance = () => {
-  // Let the adapter handle the database instantiation via URL
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL || "file:./dev.db"
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not defined in the environment.");
+  }
+
+  const adapter = new PrismaNeon({ connectionString });
+
   return new PrismaClient({ adapter });
 };
 

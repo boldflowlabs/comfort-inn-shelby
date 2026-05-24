@@ -55,30 +55,16 @@ export async function POST(req: NextRequest) {
       });
 
       if (conversation) {
-        let currentIntents = JSON.parse(conversation.intentLog || "[]");
+        const currentIntents = JSON.parse(conversation.intentLog || "[]");
         if (!currentIntents.includes("LEAD_CAPTURE")) {
           currentIntents.push("LEAD_CAPTURE");
         }
-
-        // Remove BOOKING_IN_PROGRESS since the booking is now a completed lead
-        currentIntents = currentIntents.filter((intent: string) => intent !== "BOOKING_IN_PROGRESS");
 
         await prisma.conversation.update({
           where: { sessionId },
           data: {
             leadCaptured: true,
             intentLog: JSON.stringify(currentIntents)
-          }
-        });
-
-        // Also clean up any message intents for this session
-        await prisma.message.updateMany({
-          where: {
-            sessionId,
-            intentDetected: "BOOKING_IN_PROGRESS"
-          },
-          data: {
-            intentDetected: "LEAD_CAPTURE"
           }
         });
       }

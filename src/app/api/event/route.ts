@@ -255,3 +255,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+// Auto-run abandonment scan periodically in persistent/dev environments
+const globalForScheduler = global as unknown as { abandonmentIntervalId?: NodeJS.Timeout };
+
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  if (!globalForScheduler.abandonmentIntervalId) {
+    globalForScheduler.abandonmentIntervalId = setInterval(async () => {
+      try {
+        console.log("[Auto-Scheduler] Scanning for abandoned bookings...");
+        const count = await scanAndProcessAbandonment();
+        if (count > 0) {
+          console.log(`[Auto-Scheduler] Successfully processed ${count} abandoned booking(s).`);
+        }
+      } catch (err) {
+        console.error("[Auto-Scheduler] Failed to run automated abandonment scan:", err);
+      }
+    }, 10 * 60 * 1000); // Scan every 10 minutes
+  }
+}

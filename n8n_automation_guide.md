@@ -136,6 +136,18 @@ To ensure only Elara can trigger this workflow:
    - Rule 2: String equals `COMPLAINT_ESCALATED` -> route to **Branch B**
    - Rule 3: String equals `BOOKING_ABANDONED` -> route to **Branch C**
 
+### Step 4: Booking Abandonment Scanner Trigger (Required for Serverless/Vercel Deploys)
+To run the booking abandonment scans in a serverless production environment (where background timers are not supported):
+1. Create a separate **Schedule Trigger** node.
+2. Set it to trigger every **15 minutes**.
+3. Connect the Schedule Trigger to an **HTTP Request** node:
+   - **Method:** `POST`
+   - **URL:** `https://your-chatbot-domain.com/api/event?action=scan_abandonment`
+   - **Headers:**
+     - `x-elara-secret`: `comfort-inn-shelby-elara-token-secret-123` (matching the `JWT_SECRET` in your `.env` file)
+4. This node will trigger the Next.js scanner, which identifies inactive booking flows, extracts guest details from the chat sequence, logs the partial lead to the database, and fires the `BOOKING_ABANDONED` event to route to **Branch C**.
+*(Note: If running in persistent local development or a dedicated VPS, the Next.js app runs this scan automatically every 10 minutes without needing this n8n trigger).*
+
 ---
 
 ## 🌿 Branch Implementations

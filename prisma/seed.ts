@@ -71,32 +71,6 @@ const seedItems = [
     value: "Incidental deposit: $250 USD at check-in (refundable upon room inspection).",
   },
 
-  // Renovations (Current as of May 2026)
-  {
-    category: "renovations",
-    key: "pool_status",
-    value: "temporarily closed for renovations",
-  },
-  {
-    category: "renovations",
-    key: "gym_status",
-    value: "temporarily closed for renovations",
-  },
-  {
-    category: "renovations",
-    key: "elevator_status",
-    value: "currently unavailable (no elevator, 2 stories, rooms on 2nd floor accessible by stairs only)",
-  },
-  {
-    category: "renovations",
-    key: "ev_charging_status",
-    value: "currently unavailable",
-  },
-  {
-    category: "renovations",
-    key: "notice",
-    value: "Our outdoor pool, fitness center, elevator, and EV charging station are temporarily unavailable while we undergo renovations. The rest of the hotel is fully open and we would love to welcome you! (Please let us know if you require a first-floor room due to the elevator closure).",
-  },
 
   // Rooms
   {
@@ -539,6 +513,9 @@ A: Popular attractions include: Earl Scruggs Center, Don Gibson Theatre, Gardner
 ];
 
 async function main() {
+  console.log("Clearing existing KB items...");
+  await prisma.kbItem.deleteMany();
+
   console.log("Seeding Comfort Inn Shelby KB items...");
   
   for (const item of seedItems) {

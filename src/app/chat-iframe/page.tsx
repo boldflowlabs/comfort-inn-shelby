@@ -566,11 +566,11 @@ export default function ChatIframe() {
     return (
       <div className="widget-wrapper">
         <div className="launcher-container">
-          <button className="character-launcher" onClick={toggleChat} aria-label="Open chat concierge">
+          <button className="character-launcher" onClick={toggleChat} onContextMenu={(e) => e.preventDefault()} aria-label="Open chat concierge">
             <span className="character-speech-bubble">Hello! How may I assist you today?</span>
-            <Image src={Img1} alt="Concierge Character" className="char-frame frame-1" />
-            <Image src={Img2} alt="Concierge Character" className="char-frame frame-2" />
-            <Image src={Img3} alt="Concierge Character" className="char-frame frame-3" />
+            <Image src={Img1} alt="Concierge Character" className="char-frame frame-1" draggable={false} />
+            <Image src={Img2} alt="Concierge Character" className="char-frame frame-2" draggable={false} />
+            <Image src={Img3} alt="Concierge Character" className="char-frame frame-3" draggable={false} />
           </button>
         </div>
       </div>

@@ -3,8 +3,9 @@
   if (window.__ElaraChatInitialized) return;
   window.__ElaraChatInitialized = true;
 
-  // Configuration
-  const SERVER_URL = window.location.origin;
+  // Configuration: Dynamically determine the server URL based on where this script is hosted
+  const scriptTag = document.currentScript;
+  const SERVER_URL = scriptTag && scriptTag.src ? new URL(scriptTag.src).origin : window.location.origin;
   const IFRAME_URL = `${SERVER_URL}/chat-iframe`;
   
   // Create iframe container element
@@ -14,9 +15,9 @@
   container.style.bottom = "20px";
   container.style.right = "20px";
   
-  // Initial size accommodates the text badge collapsed state
-  container.style.width = "180px";
-  container.style.height = "64px";
+  // Initial size accommodates the animated character
+  container.style.width = "450px";
+  container.style.height = "350px";
   container.style.zIndex = "999999";
   container.style.transition = "width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1), right 0.3s cubic-bezier(0.16, 1, 0.3, 1)";
   container.style.borderRadius = "4px";
@@ -53,17 +54,17 @@
 
     if (data.type === "ELARA_SHOW_TOOLTIP") {
       // Expand width & height slightly to make space for the tooltip bubble above the launcher
-      container.style.width = "280px";
-      container.style.height = "140px";
+      container.style.width = "480px";
+      container.style.height = "400px";
       container.style.bottom = "20px";
       container.style.right = "20px";
       container.style.borderRadius = "4px";
       container.style.boxShadow = "none";
     } 
     else if (data.type === "ELARA_DISMISS_TOOLTIP") {
-      // Shrink back to fit only the closed Concierge Badge launcher
-      container.style.width = "180px";
-      container.style.height = "64px";
+      // Shrink back to fit only the closed animated character
+      container.style.width = "450px";
+      container.style.height = "350px";
       container.style.bottom = "20px";
       container.style.right = "20px";
       container.style.borderRadius = "4px";
@@ -90,9 +91,9 @@
           container.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.12)";
         }
       } else {
-        // Collapse container size to show only the launcher button (badge state)
-        container.style.width = "180px";
-        container.style.height = "64px";
+        // Collapse container size to show only the animated character
+        container.style.width = "450px";
+        container.style.height = "350px";
         container.style.bottom = "20px";
         container.style.right = "20px";
         container.style.borderRadius = "4px";

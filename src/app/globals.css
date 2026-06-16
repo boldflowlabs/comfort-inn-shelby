@@ -1,18 +1,18 @@
 :root {
-  /* Premium Editorial Color Palette - Brass, Slate, Charcoal & Ivory */
-  --navy-950: #0f1219; /* Obsidian Charcoal */
-  --navy-900: #161b25; /* Dark Slate */
-  --navy-800: #222936; /* Muted Slate */
-  --navy-700: #333d4f;
-  --navy-600: #4a576e;
-  --navy-100: #eef1f6;
+  /* Comfort Inn Shelby NC - Brand Color Palette */
+  --navy-950: #001f5b; /* Comfort Inn Deep Navy */
+  --navy-900: #002b80; 
+  --navy-800: #0036a1; 
+  --navy-700: #0042c4;
+  --navy-600: #004ee8;
+  --navy-100: #e6f0ff;
   
-  --gold-600: #7a6648; /* Deep Brass */
-  --gold-500: #a38c69; /* Muted Champagne Gold */
-  --gold-400: #b9a17c; /* Warm Gold Accent */
-  --gold-300: #c9b390; /* Pale Gold */
-  --gold-200: #d8c5a7;
-  --gold-100: #f5ecda;
+  --gold-600: #d99c14; 
+  --gold-500: #ffb81c; /* Comfort Inn Vibrant Yellow */
+  --gold-400: #ffc445; 
+  --gold-300: #ffd06e; 
+  --gold-200: #ffdc96;
+  --gold-100: #fff4db;
 
   /* Neutrals */
   --bg-dark: var(--navy-950);
@@ -24,17 +24,17 @@
   --border-dark: #2a313e;
 
   /* Fonts */
-  --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Google Sans", "Product Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-serif: var(--font-serif), "Georgia", "Times New Roman", serif;
-  --font-display: var(--font-serif);
+  --font-display: var(--font-sans);
   
   /* Shadow & Glassmorphism */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
   --shadow-md: 0 6px 20px -2px rgba(26, 30, 38, 0.04);
   --shadow-lg: 0 12px 30px -4px rgba(26, 30, 38, 0.06);
   --shadow-xl: 0 20px 48px -6px rgba(26, 30, 38, 0.08);
-  --glass-bg: rgba(15, 18, 25, 0.85);
-  --glass-border: rgba(163, 140, 105, 0.15);
+  --glass-bg: rgba(0, 31, 91, 0.85);
+  --glass-border: rgba(255, 184, 28, 0.15);
   --glass-blur: blur(16px);
 
   /* Radii - Sharp, clean borders (not bubbly) */
@@ -130,9 +130,9 @@ button {
 }
 
 @keyframes pulseGold {
-  0% { box-shadow: 0 0 0 0 rgba(163, 140, 105, 0.4); }
-  70% { box-shadow: 0 0 0 8px rgba(163, 140, 105, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(163, 140, 105, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 184, 28, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 184, 28, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 184, 28, 0); }
 }
 
 @keyframes pulseGoldSlow {

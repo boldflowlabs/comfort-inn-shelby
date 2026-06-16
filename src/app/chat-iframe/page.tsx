@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { MessageSquare, X, Phone, Send, RotateCcw } from "lucide-react";
+import Image from "next/image";
+import Img1 from "../../img/Img1.png";
+import Img2 from "../../img/Img2.png";
+import Img3 from "../../img/img3.png";
 import "./chat-iframe.css";
 
 interface Message {
@@ -615,10 +619,11 @@ export default function ChatIframe() {
               <div className="tooltip-arrow" />
             </div>
           )}
-          <button className="launcher-button" onClick={toggleChat} aria-label="Open chat concierge">
-            <span className="launcher-pulse-dot" />
-            <MessageSquare className="launcher-icon" />
-            <span className="launcher-text">Concierge</span>
+          <button className="character-launcher" onClick={toggleChat} aria-label="Open chat concierge">
+            <span className="character-speech-bubble">Hello! How may I assist you today?</span>
+            <Image src={Img1} alt="Concierge Character" className="char-frame frame-1" />
+            <Image src={Img2} alt="Concierge Character" className="char-frame frame-2" />
+            <Image src={Img3} alt="Concierge Character" className="char-frame frame-3" />
           </button>
         </div>
       </div>

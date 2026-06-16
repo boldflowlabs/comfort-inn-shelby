@@ -21,8 +21,7 @@ export default function ChatIframe() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  // Tooltip popup states
-  const [showTooltip, setShowTooltip] = useState(false);
+  // Custom reset confirmation modal state
   
   // Custom reset confirmation modal state
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -104,25 +103,6 @@ export default function ChatIframe() {
     }
   }, []);
 
-  // 2. Proactive Tooltip Greeting (3.5-second delay)
-  useEffect(() => {
-    if (sessionId && !isOpen) {
-      const activeSessionId = sessionStorage.getItem("elara_session_id") || sessionId;
-      const dismissed = sessionStorage.getItem(`elara_tooltip_dismissed_${activeSessionId}`);
-
-      if (!dismissed) {
-        const timer = setTimeout(() => {
-          setShowTooltip(true);
-          window.parent.postMessage({ type: "ELARA_SHOW_TOOLTIP" }, "*");
-        }, 3500);
-        return () => clearTimeout(timer);
-      } else {
-        // Shrink container if already dismissed
-        window.parent.postMessage({ type: "ELARA_DISMISS_TOOLTIP" }, "*");
-      }
-    }
-  }, [sessionId, isOpen]);
-
   // 3. Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -157,34 +137,12 @@ export default function ChatIframe() {
     const nextState = !isOpen;
     setIsOpen(nextState);
     if (nextState) {
-      setShowTooltip(false);
       const activeSessionId = sessionStorage.getItem("elara_session_id") || sessionId;
       if (activeSessionId) {
         sessionStorage.setItem(`elara_greeted_${activeSessionId}`, "true");
-        sessionStorage.setItem(`elara_tooltip_dismissed_${activeSessionId}`, "true");
       }
     }
     window.parent.postMessage({ type: "ELARA_TOGGLE", isOpen: nextState }, "*");
-  };
-
-  const handleTooltipClick = () => {
-    setIsOpen(true);
-    setShowTooltip(false);
-    const activeSessionId = sessionStorage.getItem("elara_session_id") || sessionId;
-    if (activeSessionId) {
-      sessionStorage.setItem(`elara_greeted_${activeSessionId}`, "true");
-      sessionStorage.setItem(`elara_tooltip_dismissed_${activeSessionId}`, "true");
-    }
-    window.parent.postMessage({ type: "ELARA_TOGGLE", isOpen: true }, "*");
-  };
-
-  const dismissTooltip = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent opening the chat panel
-    setShowTooltip(false);
-    if (sessionId) {
-      sessionStorage.setItem(`elara_tooltip_dismissed_${sessionId}`, "true");
-    }
-    window.parent.postMessage({ type: "ELARA_DISMISS_TOOLTIP" }, "*");
   };
 
   // Listen for parent events (like page resize or open trigger)
@@ -608,17 +566,6 @@ export default function ChatIframe() {
     return (
       <div className="widget-wrapper">
         <div className="launcher-container">
-          {showTooltip && (
-            <div className="launcher-tooltip animate-float" onClick={handleTooltipClick}>
-              <div className="tooltip-body">
-                <span className="tooltip-text">Hi there! 👋 Check rates & ask me anything.</span>
-                <button className="tooltip-close-btn" onClick={dismissTooltip} aria-label="Close tooltip">
-                  <X size={10} />
-                </button>
-              </div>
-              <div className="tooltip-arrow" />
-            </div>
-          )}
           <button className="character-launcher" onClick={toggleChat} aria-label="Open chat concierge">
             <span className="character-speech-bubble">Hello! How may I assist you today?</span>
             <Image src={Img1} alt="Concierge Character" className="char-frame frame-1" />

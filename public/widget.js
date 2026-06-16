@@ -52,25 +52,7 @@
     const data = event.data;
     if (typeof data !== "object" || !data.type) return;
 
-    if (data.type === "ELARA_SHOW_TOOLTIP") {
-      // Expand width & height slightly to make space for the tooltip bubble above the launcher
-      container.style.width = "480px";
-      container.style.height = "400px";
-      container.style.bottom = "20px";
-      container.style.right = "20px";
-      container.style.borderRadius = "4px";
-      container.style.boxShadow = "none";
-    } 
-    else if (data.type === "ELARA_DISMISS_TOOLTIP") {
-      // Shrink back to fit only the closed animated character
-      container.style.width = "450px";
-      container.style.height = "350px";
-      container.style.bottom = "20px";
-      container.style.right = "20px";
-      container.style.borderRadius = "4px";
-      container.style.boxShadow = "none";
-    }
-    else if (data.type === "ELARA_TOGGLE") {
+    if (data.type === "ELARA_TOGGLE") {
       const isOpen = data.isOpen;
       const isMobile = window.innerWidth <= 500;
 

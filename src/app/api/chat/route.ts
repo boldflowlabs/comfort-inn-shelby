@@ -3,30 +3,25 @@ import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 
 // ─── Rate Limiting ──────────────────────────────────────────────────
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX = 30; // max requests per window per session
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-// Auto-cleanup stale entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitMap) {
-    if (now > entry.resetAt) rateLimitMap.delete(key);
-  }
-}, 5 * 60 * 1000);
-
-function isRateLimited(sessionId: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(sessionId);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(sessionId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+async function isRateLimited(sessionId: string): Promise<boolean> {
+  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  try {
+    const recentMessagesCount = await prisma.message.count({
+      where: {
+        sessionId,
+        role: "user",
+        timestamp: {
+          gte: oneMinuteAgo,
+        },
+      },
+    });
+    return recentMessagesCount >= RATE_LIMIT_MAX;
+  } catch (error) {
+    console.error("Rate limit database check failed, fallback to allowing request:", error);
     return false;
   }
-
-  entry.count++;
-  return entry.count > RATE_LIMIT_MAX;
 }
 
 // Helper to trigger the n8n webhook
@@ -127,7 +122,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit check
-    if (isRateLimited(sessionId)) {
+    if (await isRateLimited(sessionId)) {
       return NextResponse.json({
         response: "You're sending messages a bit too quickly. Please wait a moment and try again.",
         intent: "GENERAL_FAQ"

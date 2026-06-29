@@ -14,6 +14,16 @@ function checkAuthentication(req: NextRequest): boolean {
   return !!decoded && decoded.email === ADMIN_EMAIL;
 }
 
+// Helper to escape CSV cells (prevent CSV Injection / formula injection)
+function escapeCsvCell(val: string | null | undefined): string {
+  if (!val) return "";
+  let escaped = val.replace(/"/g, '""');
+  if (/^[=\+\-@]/.test(escaped)) {
+    escaped = "'" + escaped;
+  }
+  return escaped;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -172,12 +182,12 @@ export async function GET(req: NextRequest) {
       // Generate CSV string
       const headers = "Name,Email,Phone,Check-in Date,Room Preference,Source,Captured At\n";
       const rows = leads.map(l => {
-        const cleanName = l.firstName.replace(/"/g, '""');
-        const cleanEmail = l.email.replace(/"/g, '""');
-        const cleanPhone = l.phone.replace(/"/g, '""');
-        const checkin = l.checkinDate || "";
-        const room = l.roomPreference || "";
-        const source = l.sourcePage || "";
+        const cleanName = escapeCsvCell(l.firstName);
+        const cleanEmail = escapeCsvCell(l.email);
+        const cleanPhone = escapeCsvCell(l.phone);
+        const checkin = escapeCsvCell(l.checkinDate);
+        const room = escapeCsvCell(l.roomPreference);
+        const source = escapeCsvCell(l.sourcePage);
         const date = l.createdAt.toISOString();
         return `"${cleanName}","${cleanEmail}","${cleanPhone}","${checkin}","${room}","${source}","${date}"`;
       }).join("\n");

@@ -513,15 +513,12 @@ A: Popular attractions include: Earl Scruggs Center, Don Gibson Theatre, Gardner
 ];
 
 async function main() {
-  console.log("Clearing existing KB items...");
-  await prisma.kbItem.deleteMany();
-
   console.log("Seeding Comfort Inn Shelby KB items...");
   
   for (const item of seedItems) {
     await prisma.kbItem.upsert({
       where: { key: item.key },
-      update: { category: item.category, value: item.value },
+      update: {}, // Keep existing values to preserve custom changes/edits made by the hotel admin
       create: { category: item.category, key: item.key, value: item.value },
     });
   }
